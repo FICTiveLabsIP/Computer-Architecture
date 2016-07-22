@@ -1,30 +1,34 @@
-link l1 : ct                  \ BEGIN
-link l2 : rdm                  \
-link ewh : 16                   \
-                                 \
-accept rdm_delay : 0              \ one cycle for address forming
-                                   \
-dw 004Ah : 00Ch                     \ X
-dw 0048h : 0001h                     \ A(Y)
-dw 0046h : 0000h                      \ A(Z)
-dw 0000h : 000h                        \ Z
-dw 0001h : 00Ah                         \ Y
-                                         \
-accept r8 : 004Ah                         \ first address
-       {xor nil, r8, r8; oey; ewh;}        \ high digits to zero
-       {add nil, r8, z; oey; ewl;}          \ low digits to address
-                                             \
-ss1    {r; cjp rdm, ss1; add r9, bus_d, z;}   \ read content
-                                               \
-       {sub r8, r8, 02h, nz;}                   \ move to next address
-       {or nil, r8, z; oey; ewl;}                \ low digits to address
-                                                  \
-ss2    {r; cjp rdm, ss2; sub nil, bus_d, z; ewl;}  \ read and sub content
-ss3    {r; cjp rdm, ss3; sub r9, bus_d, nz;}        \
-       {sub r8, r8, 02h, nz;}                        \ move to next address
-       {or nil, r8, z; oey; ewl;}                     \ low digits to address
-                                                       \
-ss4    {r; cjp rdm, ss4; add nil, bus_d, z; ewl;}       \ read the address
-ss5    {w; cjp rdm, ss5; add nil, r9, z; oey;}           \ write the content
-                                                          \
-       {}                                                  \ END
+link L1 : ct
+link L2 : rdm
+link ewh: 16
+
+accept rdm_delay: 0
+
+dw 001Ah: 000h  \ A(x)
+dw 0018h: 001h  \ A(y)
+dw 0016h: 002h  \ A(z)
+dw 0000h: 037h  \ x
+dw 0001h: 00Ah  \ y
+dw 0002h: 000h  \ z
+
+accept r12: 001Ah
+
+       { xor nil, r12, r12; oey; ewh; }
+       { add nil, r12, z; oey; ewl;   }
+
+tag1   { r; cjp rdm, tag1; add nil, bus_d, z; ewl; }
+tag2   { r; cjp rdm, tag2; add r13, bus_d, z;      }
+
+       { sub r12, r12, 02h, nz;     }
+       { add nil, r12, z; oey; ewl; }
+
+tag3   { r; cjp rdm, tag3; add nil, bus_d, z; ewl; }
+tag4   { r; cjp rdm, tag4; sub r13, bus_d, nz;     }
+
+       { sub r12, r12, 02h, nz; }
+       { add nil, r12, z; oey; ewl; }
+
+tag5   { r; cjp rdm, tag5; add nil, bus_d, z; ewl; }
+tag6   { w; cjp rdm, tag6; add nil, r13, z; oey;   }
+
+       {}
